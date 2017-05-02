@@ -6857,6 +6857,29 @@ vkopt['turn_blocks'] = {
     }
 }
 
+vkopt['audio_clean_titles'] = {
+	onSettings:{
+		Media:{
+			audio_clean_titles: {
+				title: 'seAudioUntrashTitle'
+			}}
+	},
+	processNode: function (node, params) {
+		if (vkopt.settings.get('audio_clean_titles')){ // clean titles
+			var nodes=geByClass('audio_title_wrap',node);
+			for (var i=0; i<nodes.length; i++){
+				FindAndProcessTextNodes(nodes[i],function(mainNode,childItem){
+					var el = mainNode.childNodes[childItem];
+					if (el.nodeValue && !/^[\u2013\s]+$/.test(el.nodeValue)){
+						el.nodeValue=vkopt.audio.remove_trash(el.nodeValue);
+					}
+					return childItem;
+				});
+			}
+		}
+	}
+}
+
 vkopt['calendar'] = {
     calendar: null,
     calEvents: {},
@@ -7054,29 +7077,6 @@ vkopt['calendar'] = {
     },
     calTrailOn: function (event) {
         if (!~event.target.id.indexOf('day')) return;
-
-vkopt['audio_clean_titles'] = {
-	onSettings:{
-		Media:{
-			audio_clean_titles: {
-				title: 'seAudioUntrashTitle'
-			}}
-	},
-	processNode: function (node, params) {
-		if (vkopt.settings.get('audio_clean_titles')){ // clean titles
-			var nodes=geByClass('audio_title_wrap',node);
-			for (var i=0; i<nodes.length; i++){
-				FindAndProcessTextNodes(nodes[i],function(mainNode,childItem){
-					var el = mainNode.childNodes[childItem];
-					if (el.nodeValue && !/^[\u2013\s]+$/.test(el.nodeValue)){
-						el.nodeValue=vkopt.audio.remove_trash(el.nodeValue);
-					}
-					return childItem;
-				});
-			}
-		}
-	}
-}
 
         var g = function () {
             var day = vkopt.calendar.calEventMon[event.target.key];
