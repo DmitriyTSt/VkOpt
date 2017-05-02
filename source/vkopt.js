@@ -7110,7 +7110,7 @@ vkopt['calendar'] = {
                 uid: value[2],
                 photo: value[4],
                 name: value[1],
-                text: value[0] > 0 ? 'день рождение' : ''
+                text: value[0] > 0 ? 'День рождения:' : ''
 
             });
 
@@ -7121,18 +7121,17 @@ vkopt['calendar'] = {
     tooltip: function (opt) {
         return vk_lib.tpl_process(vk_lib.get_block_comments(function () {
             /*tooltips:
-             <div style="padding-bottom: 4px;">
-             <a href="{vals.uid}" onclick=\"return nav.go(this, event);\">
-             <img class=\"photo\" src="{vals.photo}"></a>
-             <span class=\"info\">
-             <span class=\"info_inner\">
-             <span class=\"name\"><a href="{vals.uid}" onclick=\"return nav.go(this, event);\">{vals.name}</a></span>
-             <span class=\"text\">{vals.text}</span>
-             </span>
-             </span>
+             <div class="vk_cal_row">
+             <div class="vk_cal_col_left">
+             <a href="{vals.uid}" onclick="return nav.go(this, event);"><img src="{vals.photo}"></a>
+             </div>
+             <div class="vk_cal_col_right">
+             <div>{vals.text}</div>
+             <div><a href="{vals.uid}" onclick="return nav.go(this, event);">{vals.name}</a></div>
+             </div>
+             <div style="clear:both"></div>
              </div>
              */
-
         }).tooltips, opt);
     },
     css: function () {
@@ -7168,6 +7167,12 @@ vkopt['calendar'] = {
              padding: 12px 14px 13px;
              color: #222;
              background-color: #e4e6e9;
+             }
+             .vk_cal_row {
+             padding:2px;
+             }
+             .vk_cal_col_left, .vk_cal_col_right {
+             float:left;
              }
              */
         }).css;
