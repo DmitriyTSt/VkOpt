@@ -7169,10 +7169,16 @@ vkopt['calendar'] = {
              background-color: #e4e6e9;
              }
              .vk_cal_row {
-             padding:2px;
+             padding: 2px;
              }
              .vk_cal_col_left, .vk_cal_col_right {
              float:left;
+             }
+             .vk_cal_col_left img {
+             border-radius: 50%;
+             }
+             .vk_cal_col_right {
+             margin-left: 7px;
              }
              */
         }).css;
