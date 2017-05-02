@@ -5251,12 +5251,14 @@ vkopt['face'] =  {
          .vk_old_audio_btns .audio_row .audio_row_cover_wrap {
             width: 28px;
             height: 28px;
+            border-radius: 50%;
             background-image: none;
          }
          .vk_old_audio_btns .audio_row .audio_row_cover_play_icon {
             background-color: #6788AA;
             width: 28px;
             height: 28px;
+            border-radius: 50%;
             opacity: 1;
          }
          .vk_old_audio_btns .audio_row .audio_row_cover_play_icon:hover {
