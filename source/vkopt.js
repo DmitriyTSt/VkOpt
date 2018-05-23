@@ -6862,6 +6862,8 @@ vkopt['profile'] = {
                if (au.length){
                   box.bodyNode.appendChild(se('<div class="ui_search">\
                         <input type="text" class="ui_search_field" id="scan_audio_filter_text" onkeyup="vkopt.profile.scan_audio_filter()" placeholder="Поиск..">\
+                        <input type="text" id="get_create_hash" placeholder="Скопируйте хеш для создания">\
+                        <button onclick="vkopt.profile.scan_audio_save()">Сохранить себе</button>\
                   </div>'));
                   var wrap = se('<div class="vk_scan_audio_rows"></div>');
                   box.bodyNode.appendChild(wrap);
@@ -6887,6 +6889,30 @@ vkopt['profile'] = {
          var title = geByClass1("audio_row__title_inner", rows[i]).innerText.toUpperCase();
          ((performer.indexOf(newText) > -1 || title.indexOf(newText) > -1) ? show : hide)(rows[i]);
       }
+   },
+   scan_audio_save: function () {
+      var wrap = geByClass1("vk_scan_audio_rows");
+      var audios = geByClass("audio_row ", wrap);
+      var ids = [];
+      for (var i = 0; i < audios.length; i++) {
+         ids.push(audios[i].getAttribute("data-full-id"));}
+      var audio_list = ids.join(",");
+      var h = ge("get_create_hash").value;
+      ajax.post("al_audio.php", {
+         act: "save_playlist",
+         hash: h,
+         owner_id: remixmid(),
+         playlist_id: 0,
+         al: 1,
+         cover: 0,
+         title: "Audio id" + cur.oid,
+         description: "Album from id" + cur.oid + " audio",
+         Audios: audio_list
+      }, {
+         onDone: function(response) {
+            console.log(response);
+         }
+      });
    },
    search_age: function(uid,el){
       var _el=ge(el);
