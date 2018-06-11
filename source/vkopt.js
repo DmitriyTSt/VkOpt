@@ -6942,8 +6942,7 @@ vkopt['profile'] = {
                         ldr = se(vkopt.profile.tpls['scan_audio_loader']);
                         wrap = se('<div class="vk_scan_audio_rows"></div>');
 								box.bodyNode.appendChild(se('<div class="ui_search">\
-									<input type="text" class="ui_search_field" id="scan_audio_filter_text" onkeyup="vkopt.profile.scan_audio_filter()" placeholder="Поиск..">\
-									<input type="text" id="get_create_hash" placeholder="Скопируйте хеш для создания">\
+									<input type="text" id="get_create_hash" style="width:100%" placeholder="Скопируйте хеш для создания(cur.audioPage._data.newPlaylistHash)"><br/>\
 									<button onclick="vkopt.profile.scan_audio_save()">Сохранить себе</button>\
 							   </div>'));
                         box.bodyNode.appendChild(se(vkopt.profile.tpls['scan_audio_ui_search']));
