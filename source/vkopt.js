@@ -172,8 +172,12 @@ var vkopt_core = {
       //TODO: тут ещё бы дождаться подгрузки vk_lib.js
       vkopt_core.dom_ready(function(){
          // if (!isNewVk()) return;
-         console.log('init vkopt 3.x');
-         vkopt_core.run();
+         if (!window.StaticFiles){
+            console.log('avoid vkopt init');
+         } else {
+            console.log('init vkopt 3.x');
+            vkopt_core.run();
+         }
       });
    },
    run: function(){
@@ -2673,7 +2677,7 @@ vkopt['audio'] =  {
 
       for (var i = 0; i < audios.length; i++){
          var row = audios[i];
-         var dur = geByClass1('audio_row__performer_title', row);
+         var dur = geByClass1('audio_row__info', row);
          var info = null;
          try {
             info = JSON.parse(row.dataset["audio"]);
@@ -2696,7 +2700,7 @@ vkopt['audio'] =  {
          var name = unclean(info[4]+' - '+info[3]).replace(/<em>|<\/em>/g, ''); // зачищаем от тегов.
          name = vkCleanFileName(name);
 
-         var size = vkopt.audio._sizes_cache[info_obj.id];
+         var size = vkopt.audio._sizes_cache[info_obj.fullId];
          var sz_labels = size ? vkopt.audio.size_to_bitrare(size, info_obj.duration) : {};
          if (size){
             row.dataset['kbps'] = sz_labels.kbps_raw;
@@ -2788,7 +2792,7 @@ vkopt['audio'] =  {
       if (!vkopt.settings.get('audio_size_info')) return;
 
       var aid = id.split('_')[1];
-      var size = vkopt.audio._sizes_cache[aid];
+      var size = vkopt.audio._sizes_cache[id];
       var rb = true;
       var WAIT_TIME = 4000;
       var els = geByClass('_audio_row_' + id);
@@ -2806,13 +2810,15 @@ vkopt['audio'] =  {
             el.dataset['kbps'] = sz_info.kbps_raw;
             el.dataset['filesize'] = size;
             addClass(el, 'vk_info_loaded');
-            if (sz_info.kbps_raw > 120 && !vkopt.audio._sizes_cache[aid]){
-               vkopt.audio._sizes_cache[aid] = size;
-               vkopt.audio.save_sizes_cache();
-            } else {
-               vkopt.audio._sizes_cache[aid] = false;
-               vkopt.audio.save_sizes_cache();
 
+            if (!vkopt.audio._sizes_cache[id]){
+               if (sz_info.kbps_raw > 120){
+                  vkopt.audio._sizes_cache[id] = size;
+                  vkopt.audio.save_sizes_cache();
+               } else {
+                  vkopt.audio._sizes_cache[id] = false;
+                  vkopt.audio.save_sizes_cache();
+               }
             }
             return sz_info.kbps_raw > 120;
          }
@@ -6114,6 +6120,10 @@ vkopt['face'] =  {
                   class_toggler: true
                }
             }
+         },
+         compact_like_btns: {
+            title: 'seCompactLikeBtns',
+            class_toggler: true
          }
       },
 
@@ -6153,38 +6163,46 @@ vkopt['face'] =  {
             border-radius: 0px !important;
          }
 
+         .vk_old_audio_btns .audio_row {
+            line-height: 1;
+         }
+         .vk_old_audio_btns .audio_w_covers .audio_row .audio_row__performer_title {
+            justify-content: flex-end;
+            flex-direction: row-reverse;
+            align-items: center;
+         }
+         .vk_old_audio_btns .audio_w_covers .audio_row .audio_row__performers a {
+            color: #2a5885;
+            font-weight: 500;
+         }
          .vk_old_audio_btns .audio_w_covers .audio_row {
             height: 42px;
             padding: 2px 0;
          }
-         .vk_old_audio_btns .audio_w_covers .audio_row .audio_row__info {
-            position: relative;
-            bottom: 6px;
-         }
          .vk_old_audio_btns .audio_w_covers .audio_row .audio_row__actions {
-            margin-top: -3px;
+            margin-top: -5px;
          }
          .vk_old_audio_btns .audio_w_covers .audio_row .audio_row__inner {
             padding-left: 42px;
+            height: 40px;
          }
-         .vk_old_audio_btns .audio_w_covers .audio_row .audio_row__performer {
-            float: left;
-            top: 10px;
-            color: #2a5885;
-            font-weight: 500;
-         }
-         .vk_old_audio_btns .audio_w_covers .audio_row .audio_row__title:before {
-            display: block;
-            content: "\00a0\2013";
-            position: absolute;
-            top: 0;
-            left: 2px;
-            color: #000;
+         .vk_old_audio_btns .audio_row .audio_row__performers {
+            overflow: visible;
          }
          .vk_old_audio_btns .audio_w_covers .audio_row .audio_row__title {
-            padding-left: 17px;
-            top: 10px;
+            margin-bottom: 0px;
+            overflow: hidden;
+            text-overflow: clip;
             font-weight: normal;
+         }
+         .vk_old_audio_btns .audio_w_covers .audio_row .audio_row__title:before {
+            display: inline-block;
+            content: "\00a0\2013";
+            color: #000;
+         }
+         .vk_old_audio_btns .audio_w_covers .audio_row .audio_row__duration,
+         .vk_old_audio_btns .audio_row.audio_row__current .audio_row__duration {
+            top: 13px;
          }
          .vk_old_audio_btns .audio_row .audio_row__cover_back {
             background-color: #6788AA;
@@ -6213,13 +6231,15 @@ vkopt['face'] =  {
          .vk_old_audio_btns .audio_row .audio_row__sound_bars {
              display: none;
          }
-         .vk_old_audio_btns .audio_w_covers .vk_audio_size_info_wrap {
-            margin-top: 9px;
-         }
 
          .vk_compact_audio.vk_old_audio_btns .audio_row,
          .vk_compact_audio.vk_old_audio_btns .audio_row .audio_row__inner{
             height: 26px;
+         }
+
+         .vk_compact_audio.vk_old_audio_btns .audio_row .audio_row__performers,
+         .vk_compact_audio.vk_old_audio_btns .audio_row .audio_row__title {
+            padding: 2px 0;
          }
 
          .vk_compact_audio.vk_old_audio_btns .audio_row .audio_row__cover_back,
@@ -6234,9 +6254,6 @@ vkopt['face'] =  {
             padding-left: 30px;
          }
 
-         .vk_compact_audio.vk_old_audio_btns .audio_w_covers .audio_row .audio_row__duration {
-            top: 9px;
-         }
          .vk_compact_audio.vk_old_audio_btns .audio_row .audio_row__duration {
             top: 5px;
          }
@@ -6245,10 +6262,6 @@ vkopt['face'] =  {
          }
          .vk_compact_audio.vk_old_audio_btns .vk_audio_size_info_wrap{
             margin-top: 4px;
-         }
-         .vk_compact_audio.vk_old_audio_btns .audio_row .audio_row__performer_title .audio_row__performer,
-         .vk_compact_audio.vk_old_audio_btns .audio_w_covers .audio_row .audio_row__performer_title .audio_row__title {
-            top: 4px;
          }
          .vk_compact_audio.vk_old_audio_btns  .audio_w_covers .audio_row .audio_row__actions {
             margin-top: -12px;
@@ -6297,10 +6310,19 @@ vkopt['face'] =  {
             white-space: normal;
          }
          .vk_audio_full_title.vk_old_audio_btns .audio_row .audio_performer,
+         .vk_audio_full_title.vk_old_audio_btns .audio_row .audio_row__performers,
          .vk_audio_full_title.vk_old_audio_btns .audio_row__title._audio_row__title,
          .vk_audio_full_title.vk_old_audio_btns .audio_row .audio_row__performer_title {
             display: inline;
          }
+         .vk_audio_full_title.vk_compact_audio.vk_old_audio_btns .audio_row__performer_title,
+         .vk_audio_full_title.vk_compact_audio.vk_old_audio_btns .audio_w_covers .audio_row .audio_row__performer_title {
+             top: 6px;
+         }
+         .vk_audio_full_title.vk_old_audio_btns .audio_row__performer_title {
+             top: 13px;
+         }
+
          .vk_audio_full_title.vk_old_audio_btns .audio_row,
          .vk_audio_full_title.vk_old_audio_btns .audio_row .audio_row__inner {
             height: auto;
@@ -6313,8 +6335,8 @@ vkopt['face'] =  {
              padding-bottom: 23px;
              margin-bottom: -10px;
          }
-         .vk_compact_audio.vk_audio_full_title .audio_row .audio_row_content{
-             padding-bottom: 7px;
+         .vk_compact_audio.vk_audio_full_title.vk_old_audio_btns .audio_row .audio_row_content{
+             padding-bottom: 11px;
              margin-bottom: -10px;
          }
          .vk_audio_full_title.vk_old_audio_btns  .audio_row__performer_title:after {
@@ -6486,6 +6508,42 @@ vkopt['face'] =  {
          .vk_page_shift_right{
             margin-right: -40px;
          }
+
+         .vk_compact_like_btns .like_btns .post_dislike .post_dislike_icon {
+             width: 17px;
+             height: 14px;
+         }
+
+         .vk_compact_like_btns .like_button_icon{
+             height: 14px;
+             width: 17px;
+             opacity: 0.35;
+         }
+         .vk_compact_like_btns .like_btn {
+             margin-left: 8px;
+         }
+         .vk_compact_like_btns .like_button_count, .like_button_label{
+             font-size: 13px;
+         }
+         .vk_compact_like_btns .like_views,
+         .vk_compact_like_btns .like_views:before{
+             height: 11px;
+             line-height: 11px;
+             font-size: 11px;
+         }
+
+         .vk_compact_like_btns .like_btn.like .like_button_icon {
+             background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2216%22%20height%3D%2214%22%20viewBox%3D%220%200%2016%2014%22%20style%3D%22fill%3A%233D6899%3B%22%3E%3Cpath%20d%3D%22M8%203.2C7.4-0.3%203.2-0.8%201.4%201%20-0.5%202.9-0.5%205.8%201.4%207.7%201.9%208.2%206.9%2013%206.9%2013%207.4%2013.6%208.5%2013.6%209%2013L14.5%207.7C16.5%205.8%2016.5%202.9%2014.6%201%2012.8-0.7%208.6-0.3%208%203.2Z%22%2F%3E%3C%2Fsvg%3E");
+         }
+
+         .vk_compact_like_btns .like_btn.comment .like_button_icon {
+             background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%225%206%2014%2014%22%20style%3D%22fill%3A%233D6899%3B%22%3E%3Cpath%20d%3D%22M5%207C5%206.4%205.4%206%206%206L18%206C18.5%206%2019%206.5%2019%207L19%2015C19%2015.6%2018.6%2016%2018%2016L6%2016C5.5%2016%205%2015.5%205%2015L5%207ZM9%2016L9%2020%2014%2016%209%2016Z%22%2F%3E%3C%2Fsvg%3E");
+         }
+
+         .vk_compact_like_btns .like_btn.share .like_button_icon {
+             background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2214%22%20height%3D%2214%22%20viewBox%3D%220%200%2014%2014%22%20style%3D%22fill%3A%233D6899%3B%22%3E%3Cpath%20d%3D%22M0%205.5L0%206.5C0%208%201.6%209%203%209L8%209C8.4%209%209.1%209.2%2010.7%2010.3%2011.7%2011.1%2012.9%2012%2012.9%2012L14%2012%2014%206%2014%206%2014%206%2014%200%2012.9%200C12.9%200%2011.7%200.9%2010.7%201.7%209.1%202.8%208.4%203%208%203L3%203C1.6%203%200%204%200%205.5ZM7.5%2012L6.4%209%204%209%205.3%2014C7.3%2014%207.5%2013.3%207.5%2012Z%22%2F%3E%3C%2Fsvg%3E");
+         }
+
          */
       });
       var progress_bar = vk_lib.get_block_comments(vkProgressBar).css;
@@ -6665,6 +6723,7 @@ vkopt['profile'] = {
              .counts_module.vk_scan_audio .page_counter { padding-left: 8px; padding-right: 8px;}\
              .counts_module {max-height: none;}\
              .vk_scan_audio_rows{padding:10px;}\
+             .vk_box_content_loading{text-align:center}\
              ';
    },
 
@@ -6693,6 +6752,14 @@ vkopt['profile'] = {
            <div class="pedit_labeled">
              <input type="text" value="" id="pedit_middle_name" class="dark" autocomplete="off">
            </div>
+         </div>
+         */
+         /*scan_audio_loader:
+         <div class="vk_box_content_loading"><div class="round_spinner_big"></div></div>
+         */
+         /*scan_audio_ui_search:
+         <div class="ui_search">
+               <input type="text" class="ui_search_field" id="scan_audio_filter_text" onkeyup="vkopt.profile.scan_audio_filter()" placeholder="Поиск..">
          </div>
          */
       });
@@ -6842,40 +6909,74 @@ vkopt['profile'] = {
       return info;
    },
    scan_audio: function (){
-      var code = [];
-      for (var i = 0; i < 1000; i++)
-         code.push('[[audio'+cur.oid + '_' + (456239000 + i) + ']]');
+      var COUNT = 1000;
+      var STOP_AFTER_EMPTY_COUNT = 10; // не сканируем дальше, если такое количество запросов было с пустым ответом.
+      var box, ldr, wrap;
+      var empty_counter = 0;
 
-      ajax.post("al_pages.php", {
-            act: "convert_wiki",
-            Body: code.join('\n')
+      var ids = [];
+      for (var i = 0; i < COUNT; i++)
+         ids.push(cur.oid + '_' + (456239000 + i));
+      var step = function (ids_arr){
+         var part = ids_arr || ids.splice(0,Math.min(ids.length, vkRandomRange(5,10)));
+         ajax.post("al_audio.php", {
+            act : "reload_audio",
+            ids :  part.join(",")
          }, {
-            onDone: function(html, wikiPref) {
-               hide(boxLayerBG);
-               var el = se('<div></div>');
-               el.innerHTML = html;
-               var au = geByClass('audio_row', el);
-               var box = showFastBox({
-                     title:IDL('audio'),
-                     bodyStyle: 'padding: 0px'
-               },'');
-               if (au.length){
-                  box.bodyNode.appendChild(se('<div class="ui_search">\
-                        <input type="text" class="ui_search_field" id="scan_audio_filter_text" onkeyup="vkopt.profile.scan_audio_filter()" placeholder="Поиск..">\
-                        <input type="text" id="get_create_hash" placeholder="Скопируйте хеш для создания">\
-                        <button onclick="vkopt.profile.scan_audio_save()">Сохранить себе</button>\
-                  </div>'));
-                  var wrap = se('<div class="vk_scan_audio_rows"></div>');
-                  box.bodyNode.appendChild(wrap);
-                  box.setOptions({width:650});
-                  for (var i = au.length - 1; i >= 0 ; i--)
-                     wrap.appendChild(au[i]);
+            onDone : function (data) {
+               if (!data){ // вероятно косяк с детектом множества однотипных действий
+                  console.log('Load audio info failed:', part.join(","));
+                  setTimeout(function(){
+                     console.log('try load again');
+                     step();
+                  }, 10000);
                } else {
-                  box.bodyNode.innerHTML = getLang('audio_user_no_recs');
+                  each(data, function (i, info) {
+                     if (!box){
+                        vkLdr.hide();
+                        box = showFastBox({
+                              title:IDL('audio'),
+                              bodyStyle: 'padding: 0px',
+                              width: 650
+                        },'');
+                        ldr = se(vkopt.profile.tpls['scan_audio_loader']);
+                        wrap = se('<div class="vk_scan_audio_rows"></div>');
+								box.bodyNode.appendChild(se('<div class="ui_search">\
+									<input type="text" class="ui_search_field" id="scan_audio_filter_text" onkeyup="vkopt.profile.scan_audio_filter()" placeholder="Поиск..">\
+									<input type="text" id="get_create_hash" placeholder="Скопируйте хеш для создания">\
+									<button onclick="vkopt.profile.scan_audio_save()">Сохранить себе</button>\
+							   </div>'));
+                        box.bodyNode.appendChild(se(vkopt.profile.tpls['scan_audio_ui_search']));
+                        box.bodyNode.appendChild(wrap);
+                        box.bodyNode.appendChild(ldr);
+                     }
+
+                     var row = se(AudioUtils.drawAudio(info));
+                     wrap.appendChild(row, ldr);
+                  });
+
+                  if (data.length < 1)
+                     empty_counter++;
+                  else
+                     empty_counter = 0;
+
+                  if (ids.length > 0 && empty_counter <= STOP_AFTER_EMPTY_COUNT) // если в очереди есть аудио - продолжаем грузить
+                     setTimeout(step, vkRandomRange(800,2000));
+                  else {
+
+                     if (!box){
+                        vkLdr.hide();
+                        showFastBox('',getLang('audio_user_no_recs'));
+                     } else {
+                        hide(ldr);
+                     }
+                  }
                }
-            },
-            loader: true
-      });
+            }
+         });
+      };
+      vkLdr.show();
+      step();
       return false;
    },
    scan_audio_filter: function () {
@@ -6885,7 +6986,7 @@ vkopt['profile'] = {
       var rows = geByClass("audio_row", wrap);
 
       for (var i = 0; i < rows.length; i++) {
-         var performer = geByClass1("audio_row__performer", rows[i]).innerText.toUpperCase();
+         var performer = geByClass1("audio_row__performers", rows[i]).innerText.toUpperCase();
          var title = geByClass1("audio_row__title_inner", rows[i]).innerText.toUpperCase();
          ((performer.indexOf(newText) > -1 || title.indexOf(newText) > -1) ? show : hide)(rows[i]);
       }
@@ -7027,6 +7128,49 @@ vkopt['profile'] = {
       }
    }
 };
+
+vkopt['extra_online'] = {
+   onSettings: {
+      Users: {
+         extra_online: {
+            title: 'seShowOnlineExtraInfo',
+            default_value: true
+         }
+      }
+   },
+   css: '.vk_extra_online_info{margin-left:5px}',
+   onLocation: function(){
+      if (cur.module == "profile"){
+         vkopt.extra_online.update_online_info();
+         cur.onPeerStatusChanged && Inj.End('cur.onPeerStatusChanged', vkopt.extra_online.update_online_info);
+      }
+   },
+   update_online_info: function(){
+      var code = 'var clients=["","m.vk.com","iPhone","iPad","Android","Windows Phone","Windows 10","vk.com","VK Mobile"];var u = API.users.get({user_ids:"%UID",fields:"online,last_seen"})[0];if (u.online_app){u.app_title=API.apps.get({app_id:u.online_app}).items[0].title;}if(u.last_seen)u.last_seen.platform_title=clients[u.last_seen.platform];return u;';
+      code = code.replace(/%UID/g,cur.oid);
+      dApi.call('execute',{code: code, v:'5.75'},function(r,info){
+         re(geByClass1('vk_extra_online_info'));
+         var extra = null;
+         if (info.online_app)
+            extra = se('<a class="vk_extra_online_info" href="/app'+info.online_app+'">('+info.app_title+')</a>');
+         else if (!info.online && info.last_seen)
+            extra = se('<span class="vk_extra_online_info" title="'+(new Date(info.last_seen.time*1000)).format('HH:MM dd.mm.yyyy')+'">('+info.last_seen.platform_title+')</span>');
+
+         var p = geByClass1('profile_online');
+         if (p && hasClass(p, 'is_online'))
+            p = geByClass1('profile_online_lv');
+         else
+            p = geByClass1('profile_time_lv');
+
+         if (p){
+            if (p.childNodes.length < 1 && !info.online && info.last_seen) // no last seen info
+               p.innerHTML = (new Date(info.last_seen.time*1000)).format('HH:MM dd.mm.yyyy');
+            if (extra)
+               p.appendChild(extra);
+         }
+      })
+   }
+}
 
 vkopt['groups'] = {
    tpls:null,
@@ -8246,14 +8390,15 @@ vkopt['vk_dislike'] = {
       var scan=function(){
          var ids=uids.splice(0,1000);// max 1000 uids in one request
          var params={
-            oauth:1,
-            method:'users.get',
+            //oauth:1,
+            //method:'users.get',
             uids:ids.join(','),
             fields:'first_name,last_name,photo_100'
          };
          if (ids.length>0)
-            vkopt.vk_dislike.post('/api.php',params,function(t){
-               var r=JSON.parse(t);
+            //vkopt.vk_dislike.post('/api.php',params,
+            api4dislike.call('users.get', params, function(r){
+               //var r=JSON.parse(t);
                res=res.concat(r.response);
                if (uids.length>0)
                   setTimeout(function(){scan();},340);
@@ -8456,7 +8601,7 @@ vkopt['vk_dislike'] = {
                </a>');
             }
             return se('\
-            <a href="#" dislike_id="'+obj_id+'" class="post_dislike '+(my_dislike?' '+'pv_disliked':'')+' no_dislikes" onclick="vkopt.vk_dislike.dislike(this.getAttribute(\'dislike_id\')); return false;" onmouseover="vkopt.vk_dislike.dislike_over(this.getAttribute(\'dislike_id\'));" id="post_dislike'+obj_id+'">\
+            <a href="#" dislike_id="'+obj_id+'" class="like_btn post_dislike '+(my_dislike?' '+'pv_disliked':'')+' no_dislikes" onclick="vkopt.vk_dislike.dislike(this.getAttribute(\'dislike_id\')); return false;" onmouseover="vkopt.vk_dislike.dislike_over(this.getAttribute(\'dislike_id\'));" id="post_dislike'+obj_id+'">\
                <i class="post_dislike_icon" id="dislike_icon'+obj_id+'"></i>\
                <span class="post_like_link" id="dislike_link'+obj_id+'">'+IDL('dislike')+'</span>\
                <span class="post_like_count fl_l" id="dislike_count'+obj_id+'">'+(count|| '')+'</span>\
@@ -8525,6 +8670,9 @@ vkopt['vk_dislike'] = {
          case 'before':
             el.parentNode.insertBefore(dislike,el);
             break;
+         case 'append':
+            el.appendChild(dislike);
+            break;
          case 'wiki':
          case 'video':
             insertAfter(dislike,el);
@@ -8546,10 +8694,17 @@ vkopt['vk_dislike'] = {
       for (var i=0; i<els.length;i++){
          vkopt.vk_dislike.add(els[i]);
       }
+      /*
       els=geByClass('like_wrap',node);
       for (var i=0; i<els.length;i++){
          vkopt.vk_dislike.add(els[i]);
+      }*/
+
+      els=geByClass('like_btns',node);
+      for (var i=0; i<els.length;i++){
+         vkopt.vk_dislike.add(geByClass1('like',els[i]));
       }
+
       els=geByClass('fw_like_wrap',node);
       for (var i=0; i<els.length;i++){
          vkopt.vk_dislike.add(els[i],'before');
@@ -8891,6 +9046,9 @@ vkopt['vk_dislike'] = {
          }
          */
          /*css:
+         .dislike_wrap, .dislike_wrap:hover{
+            text-decoration:none;
+         }
          .dislike_icon{
             background-size: contain;
          }
@@ -8984,7 +9142,7 @@ vkopt['vk_dislike'] = {
             width:12px;
             height:10px;
             float: left;
-            margin:3px 0 0;
+            margin:1px 0 0;
             opacity:0.4;
             filter:alpha(opacity=40);
             -o-transition:opacity 100ms ease;
@@ -9013,7 +9171,8 @@ vkopt['vk_dislike'] = {
          .wall_module .reply .dislike_wrap {
             float:right;
             padding:10px;
-            margin:-10px;
+            padding-right: 0px;
+            margin:-10px 0px;
             margin-right: 0;
          }
          .wall_module .dislike_wrap {
@@ -9023,6 +9182,18 @@ vkopt['vk_dislike'] = {
          }
          .wall_module .dislike_link {
             margin:0 4px 0 0
+         }
+
+         .like_btns .post_dislike .post_like_link{display:none}
+         .post_dislike.no_dislikes .post_like_count{
+            margin-left: 0!important;
+         }
+         .like_btns .post_dislike{
+            margin-right: 0px;
+         }
+         .like_btns .post_dislike .post_dislike_icon {
+            width: 24px;
+            height: 20px;
          }
 
          .pv_dislike_icon {
